@@ -1,13 +1,19 @@
 use pyo3::prelude::*;
 
-/// A Python module implemented in Rust.
-#[pymodule]
-mod jarvis_voice {
-    use pyo3::prelude::*;
+mod config;
+mod model;
 
-    /// Formats the sum of two numbers as string.
-    #[pyfunction]
-    fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-        Ok((a + b).to_string())
-    }
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[pyfunction]
+fn ___version() -> &'static str {
+    VERSION
+}
+
+#[pymodule]
+fn jarvis_transcriber(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
+    m.add_wrapped(wrap_pyfunction!(___version))?;
+
+    m.add_class::<config::Config>()?;
+    Ok(())
 }
