@@ -9,7 +9,19 @@ use tar::Archive;
 use transcribe_rs::TranscriptionEngine;
 use transcribe_rs::engines::parakeet::{ParakeetEngine, ParakeetModelParams};
 
-pub async fn ensure_model_exists(uri: &str, path: &str) -> Result<()> {
+pub async fn load_model(uri: &str, path: &str) -> Result<ParakeetEngine> {
+    ensure_model_exists(uri, path).await?;
+
+    let mut engine = ParakeetEngine::new();
+
+    engine.load_model_with_params(path.as_ref(), ParakeetModelParams::int8())
+        .map_err(|e| anyhow!(e.to_string()))
+        .context("Failed to load model")?;
+
+    Ok(engine)
+}
+
+async fn ensure_model_exists(uri: &str, path: &str) -> Result<()> {
     if !PathBuf::from(path).exists() {
         download_model(uri, path).await?;
         extract_archive(&PathBuf::from(path)).await?;
@@ -19,7 +31,7 @@ pub async fn ensure_model_exists(uri: &str, path: &str) -> Result<()> {
         } else {
             remove_dir_all(path)?;
             download_model(uri, path).await?;
-            extract_archive(&path.into())
+            extract_archive(&PathBuf::from(path))
                 .await
                 .context("Failed to extract archive")?;
         }
@@ -28,7 +40,7 @@ pub async fn ensure_model_exists(uri: &str, path: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn extract_archive(source: &PathBuf) -> Result<()> {
+async fn extract_archive(source: &PathBuf) -> Result<()> {
     let tar_gz = File::open(source)?;
     let tar = GzDecoder::new(tar_gz);
     let mut archive = Archive::new(tar);
@@ -40,7 +52,7 @@ pub async fn extract_archive(source: &PathBuf) -> Result<()> {
     Ok(())
 }
 
-pub async fn try_load_model(path: PathBuf) -> bool {
+async fn try_load_model(path: PathBuf) -> bool {
     let mut engine = ParakeetEngine::new();
 
     let res = engine.load_model_with_params(&path, ParakeetModelParams::int8());
@@ -48,7 +60,7 @@ pub async fn try_load_model(path: PathBuf) -> bool {
     res.is_ok()
 }
 
-pub async fn download_model(uri: &str, path: &str) -> Result<()> {
+async fn download_model(uri: &str, path: &str) -> Result<()> {
     let client = Client::new();
     let res = client
         .get(uri)
@@ -65,7 +77,7 @@ pub async fn download_model(uri: &str, path: &str) -> Result<()> {
     let mut stream = res.bytes_stream();
 
     while let Some(item) = stream.next().await {
-        let chunk = item.map_err(|e| anyhow::anyhow!("Error while downloading chunk: {}", e))?;
+        let chunk = item.map_err(|e| anyhow!("Error while downloading chunk: {}", e))?;
         file.write_all(&chunk).context("Failed to write chunk")?;
     }
 
