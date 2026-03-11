@@ -26,9 +26,7 @@ async fn ensure_model_exists(uri: &str, path: &str) -> Result<()> {
         download_model(uri, path).await?;
         extract_archive(&PathBuf::from(path)).await?;
     } else {
-        if try_load_model(path.into()).await {
-            return Ok(());
-        } else {
+        if !try_load_model(path.into()).await {
             remove_dir_all(path)?;
             download_model(uri, path).await?;
             extract_archive(&PathBuf::from(path))
