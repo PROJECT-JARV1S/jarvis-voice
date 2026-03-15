@@ -14,7 +14,8 @@ pub async fn load_model(uri: &str, path: &str) -> Result<ParakeetEngine> {
 
     let mut engine = ParakeetEngine::new();
 
-    engine.load_model_with_params(path.as_ref(), ParakeetModelParams::int8())
+    engine
+        .load_model_with_params(path.as_ref(), ParakeetModelParams::int8())
         .map_err(|e| anyhow!(e.to_string()))
         .context("Failed to load model")?;
 

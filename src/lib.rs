@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 
 mod config;
 mod model;
+mod resampler;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
