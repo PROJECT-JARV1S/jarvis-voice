@@ -60,8 +60,7 @@ def main():
                 print("Listening for speech (silence will trigger stop)...")
                 
                 # Wait while transcribing (silence detection happens in Rust)
-                while transcriber.is_transcribing():
-                    time.sleep(0.1)
+                transcriber.wait_until_done()
                 
                 # Get and print the result
                 transcript = transcriber.get_latest_transcript()

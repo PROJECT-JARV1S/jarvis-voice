@@ -1,5 +1,6 @@
 import os
 import struct
+import time
 from typing import Union
 
 import pyaudio
@@ -55,6 +56,7 @@ class Listener:
                 if keyword_index >= 0:
                     print(f"\n[WAKE WORD DETECTED: {self.wake_words[keyword_index]}]")
                     self.force_start_transcribe()
+                    self.transcriber.wait_until_done()
                     print(f"Transcript: \"{self.get_transcript()}\"")
         except KeyboardInterrupt:
             print("\nStopping...")
