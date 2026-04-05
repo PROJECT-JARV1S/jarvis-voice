@@ -13,6 +13,7 @@ The primary user is the JARVIS Core system, acting as a foundational layer for a
 - **Wake Word Detection:** High-performance detection of the "Jarvis" wake word using Porcupine, ensuring the system is responsive to voice commands.
 - **Real-time Transcription:** Integration with Parakeet for accurate and timely speech-to-text processing.
 - **Voice Activity Detection (VAD):** Detecting when a user starts and stops speaking to optimize audio processing and transcription.
+- **Efficient Synchronization:** Event-driven signaling between Rust and Python layers, eliminating busy-polling and reducing CPU overhead during transcription waits.
 
 ## Architecture and Integration
 The engine is built as a hybrid project with a Rust core for performance-critical audio processing and a Python interface using PyO3 bindings. This allows the JARVIS system, which may be primarily Python-based, to leverage high-performance Rust components seamlessly.

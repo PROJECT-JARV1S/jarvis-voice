@@ -16,6 +16,7 @@
 
 ## Concurrency and Performance
 - **Tokio:** An asynchronous runtime for Rust, used for handling multiple tasks and asynchronous operations concurrently.
+- **Rust Primitives:** `Condvar` and `Mutex` for efficient thread synchronization and event signaling across the Rust-Python boundary.
 
 ## Data and Validation
 - **Pydantic:** Used in Python for data validation and settings management.
