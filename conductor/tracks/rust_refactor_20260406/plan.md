@@ -32,7 +32,7 @@
 - [x] Task: Ensure the Rust-Python interface correctly handles `anyhow` errors (converting to `PyResult`). 9726df9
 - [x] Task: Conductor - User Manual Verification 'Phase 5: PyO3 Bindings Separation' (Protocol in workflow.md) 434a5d8
 
-## Phase 6: Test Reorganization & Final Cleanup
+## Phase 6: Test Reorganization & Final Cleanup [checkpoint: 1dc9ca7]
 - [x] Task: Create a `tests/` directory (if not already present for Rust integration tests) or a `src/tests/` module. f87c3e2
 - [x] Task: Move unit tests from `src/*.rs` files into a dedicated `tests` structure. f87c3e2
 - [x] Task: Move `src/test_sync.rs` and any other test-only files to the new test structure. f87c3e2
