@@ -1,6 +1,6 @@
-use pyo3::prelude::*;
 use crate::config::Config;
 use crate::transcriber::{Transcriber, default};
+use pyo3::prelude::*;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 

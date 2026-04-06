@@ -1,6 +1,6 @@
 use anyhow::{Result, bail};
-use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
+use pyo3::prelude::*;
 
 pub trait AnyhowError<T> {
     fn to_py(self) -> PyResult<T>;

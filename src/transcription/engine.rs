@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use pyo3::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -7,10 +7,10 @@ use tokio::runtime::Runtime;
 use transcribe_rs::TranscriptionEngine;
 use transcribe_rs::engines::parakeet::ParakeetEngine;
 
-use crate::core::config::Config;
-use crate::audio::resampler::AudioResampler;
-use crate::audio::input::{AudioInput, RawAudio};
 use super::model::load_model;
+use crate::audio::input::{AudioInput, RawAudio};
+use crate::audio::resampler::AudioResampler;
+use crate::core::config::Config;
 
 pub const TARGET_SAMPLE_RATE: usize = 16000;
 
@@ -237,7 +237,8 @@ impl TranscriptionWorker {
         if !self.accumulated_audio.is_empty() {
             if let Ok(result) = self
                 .engine
-                .transcribe_samples(self.accumulated_audio.clone(), None) {
+                .transcribe_samples(self.accumulated_audio.clone(), None)
+            {
                 if let Ok(mut guard) = self.latest_transcript.lock() {
                     *guard = result.text;
                 }

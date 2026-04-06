@@ -1,5 +1,5 @@
-use pyo3::prelude::*;
 use crate::core::config::Config as CoreConfig;
+use pyo3::prelude::*;
 
 #[pyclass]
 #[derive(Clone, Copy)]
