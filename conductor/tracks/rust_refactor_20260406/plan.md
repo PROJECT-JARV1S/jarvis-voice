@@ -21,9 +21,9 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Audio Processing Extraction' (Protocol in workflow.md) 815fee6
 
 ## Phase 4: Transcription Logic Isolation
-- [ ] Task: Create `src/transcription/mod.rs` and `src/transcription/engine.rs`.
-- [ ] Task: Move logic from `src/transcriber.rs` and `src/model.rs` into the `src/transcription` module.
-- [ ] Task: Standardize transcription error handling with `anyhow`.
+- [x] Task: Create `src/transcription/mod.rs` and `src/transcription/engine.rs`. ae3af90
+- [x] Task: Move logic from `src/transcriber.rs` and `src/model.rs` into the `src/transcription` module. ae3af90
+- [x] Task: Standardize transcription error handling with `anyhow`. ae3af90
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Transcription Logic Isolation' (Protocol in workflow.md)
 
 ## Phase 5: PyO3 Bindings Separation
