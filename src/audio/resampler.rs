@@ -93,6 +93,7 @@ impl AudioResampler {
     pub fn flush(&mut self) -> Result<()> {
         let expected_total_output =
             (self.total_input_frames as f64 * self.resampler.resample_ratio()).ceil() as usize;
+        let expected_flush_output = expected_total_output.saturating_sub(self.total_output_frames);
         let mut emitted = Vec::new();
 
         if !self.pending_input.is_empty() {
@@ -115,6 +116,10 @@ impl AudioResampler {
                 );
             }
             emitted.extend(self.take_useful_output(produced));
+        }
+
+        if emitted.len() > expected_flush_output {
+            emitted.truncate(expected_flush_output);
         }
 
         if !emitted.is_empty() {

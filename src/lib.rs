@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 
 pub mod audio;
-mod config;
+pub mod config;
 pub mod core;
 pub mod python;
 pub mod transcriber;

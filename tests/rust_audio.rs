@@ -1,5 +1,5 @@
-use crossbeam_channel::unbounded;
 use jarvis_transcriber::audio::resampler::AudioResampler;
+use crossbeam_channel::unbounded;
 
 #[test]
 fn flushes_stream_to_expected_length() {
@@ -9,11 +9,11 @@ fn flushes_stream_to_expected_length() {
     resampler.process_f32(&vec![0.0; 1000]).unwrap();
     resampler.flush().unwrap();
 
-    let mut total = Vec::new();
+    let mut total: Vec<f32> = Vec::new();
     while let Ok(chunk) = rx.try_recv() {
         total.extend(chunk);
     }
 
     assert_eq!(total.len(), 334);
-    assert!(total.iter().all(|sample| sample.is_finite()));
+    assert!(total.iter().all(|sample: &f32| sample.is_finite()));
 }
