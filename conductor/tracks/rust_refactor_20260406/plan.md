@@ -10,7 +10,7 @@
 - [x] Task: Create `src/core/mod.rs` and `src/core/config.rs`. 3a48284
 - [x] Task: Move configuration logic from `src/config.rs` to `src/core/config.rs`. 4982cc3
 - [x] Task: Create `src/utils/mod.rs` and move any shared utility functions. c69b146
-- [ ] Task: Update `src/lib.rs` to export the new `core` and `utils` modules.
+- [x] Task: Update `src/lib.rs` to export the new `core` and `utils` modules. 8d6715f
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Core & Utils Extraction' (Protocol in workflow.md)
 
 ## Phase 3: Audio Processing Extraction
