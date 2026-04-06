@@ -7,7 +7,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Preparation & Error Handling Standardisation' (Protocol in workflow.md) d02f29e
 
 ## Phase 2: Core & Utils Extraction
-- [ ] Task: Create `src/core/mod.rs` and `src/core/config.rs`.
+- [x] Task: Create `src/core/mod.rs` and `src/core/config.rs`. 3a48284
 - [ ] Task: Move configuration logic from `src/config.rs` to `src/core/config.rs`.
 - [ ] Task: Create `src/utils/mod.rs` and move any shared utility functions.
 - [ ] Task: Update `src/lib.rs` to export the new `core` and `utils` modules.
