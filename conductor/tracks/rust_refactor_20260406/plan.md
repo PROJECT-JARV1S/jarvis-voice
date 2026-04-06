@@ -1,10 +1,10 @@
 # Implementation Plan: Refactor Rust Logic for Maintainability
 
-## Phase 1: Preparation & Error Handling Standardisation
+## Phase 1: Preparation & Error Handling Standardisation [checkpoint: d02f29e]
 - [x] Task: Add `anyhow` dependency to `Cargo.toml`. d20c464
 - [x] Task: Define a central `Error` type (if needed) or start using `anyhow::Result` in `src/lib.rs`. d20c464
 - [x] Task: Refactor `src/config.rs` to use `anyhow::Result` for error handling. f86ca8d
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Preparation & Error Handling Standardisation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Preparation & Error Handling Standardisation' (Protocol in workflow.md) d02f29e
 
 ## Phase 2: Core & Utils Extraction
 - [ ] Task: Create `src/core/mod.rs` and `src/core/config.rs`.
