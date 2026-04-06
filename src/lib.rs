@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 
 mod config;
+mod core;
 mod model;
 mod resampler;
 mod transcriber;

@@ -1,5 +1,5 @@
-use anyhow::{Result, bail};
 use pyo3::prelude::*;
+use crate::core::config::Config as CoreConfig;
 
 #[pyclass]
 #[derive(Clone, Copy)]
@@ -10,24 +10,48 @@ pub struct Config {
     pub silence_threshold_rms: f32,
 }
 
-impl Config {
-    pub fn validate(&self) -> Result<()> {
-        if self.silence_duration < 0.0 {
-            bail!("silence_duration must be non-negative");
+impl From<CoreConfig> for Config {
+    fn from(c: CoreConfig) -> Self {
+        Self {
+            silence_duration: c.silence_duration,
+            silence_threshold_rms: c.silence_threshold_rms,
         }
-        if self.silence_threshold_rms < 0.0 {
-            bail!("silence_threshold_rms must be non-negative");
+    }
+}
+
+impl From<Config> for CoreConfig {
+    fn from(c: Config) -> Self {
+        Self {
+            silence_duration: c.silence_duration,
+            silence_threshold_rms: c.silence_threshold_rms,
         }
-        Ok(())
     }
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Self {
-            silence_duration: 1.0,
-            silence_threshold_rms: 0.005,
+        CoreConfig::default().into()
+    }
+}
+
+#[pymethods]
+impl Config {
+    #[new]
+    #[pyo3(signature = (silence_duration=None, silence_threshold_rms=None))]
+    fn py_new(silence_duration: Option<f32>, silence_threshold_rms: Option<f32>) -> Self {
+        let mut config = CoreConfig::default();
+        if let Some(d) = silence_duration {
+            config.silence_duration = d;
         }
+        if let Some(t) = silence_threshold_rms {
+            config.silence_threshold_rms = t;
+        }
+        config.into()
+    }
+
+    fn validate(&self) -> PyResult<()> {
+        let core: CoreConfig = (*self).into();
+        core.validate().map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
     }
 }
 
