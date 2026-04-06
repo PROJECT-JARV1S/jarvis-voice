@@ -6,12 +6,12 @@
 - [x] Task: Refactor `src/config.rs` to use `anyhow::Result` for error handling. f86ca8d
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Preparation & Error Handling Standardisation' (Protocol in workflow.md) d02f29e
 
-## Phase 2: Core & Utils Extraction
+## Phase 2: Core & Utils Extraction [checkpoint: eed406b]
 - [x] Task: Create `src/core/mod.rs` and `src/core/config.rs`. 3a48284
 - [x] Task: Move configuration logic from `src/config.rs` to `src/core/config.rs`. 4982cc3
 - [x] Task: Create `src/utils/mod.rs` and move any shared utility functions. c69b146
 - [x] Task: Update `src/lib.rs` to export the new `core` and `utils` modules. 8d6715f
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Core & Utils Extraction' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Core & Utils Extraction' (Protocol in workflow.md) eed406b
 
 ## Phase 3: Audio Processing Extraction
 - [ ] Task: Create `src/audio/mod.rs`, `src/audio/input.rs`, and `src/audio/resampler.rs`.
