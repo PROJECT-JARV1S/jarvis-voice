@@ -8,7 +8,7 @@
 
 ## Phase 2: Core & Utils Extraction
 - [x] Task: Create `src/core/mod.rs` and `src/core/config.rs`. 3a48284
-- [ ] Task: Move configuration logic from `src/config.rs` to `src/core/config.rs`.
+- [x] Task: Move configuration logic from `src/config.rs` to `src/core/config.rs`. 4982cc3
 - [ ] Task: Create `src/utils/mod.rs` and move any shared utility functions.
 - [ ] Task: Update `src/lib.rs` to export the new `core` and `utils` modules.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Core & Utils Extraction' (Protocol in workflow.md)
