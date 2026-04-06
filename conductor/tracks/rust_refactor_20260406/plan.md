@@ -20,7 +20,7 @@
 - [x] Task: Refactor `src/audio` modules to use `anyhow` for error handling. 8c4eb29
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Audio Processing Extraction' (Protocol in workflow.md) 815fee6
 
-## Phase 4: Transcription Logic Isolation
+## Phase 4: Transcription Logic Isolation [checkpoint: 5a84d9b]
 - [x] Task: Create `src/transcription/mod.rs` and `src/transcription/engine.rs`. ae3af90
 - [x] Task: Move logic from `src/transcriber.rs` and `src/model.rs` into the `src/transcription` module. ae3af90
 - [x] Task: Standardize transcription error handling with `anyhow`. ae3af90
