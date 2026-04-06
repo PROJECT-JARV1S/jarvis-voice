@@ -27,8 +27,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Transcription Logic Isolation' (Protocol in workflow.md) b62df9d
 
 ## Phase 5: PyO3 Bindings Separation
-- [ ] Task: Create `src/python/mod.rs` or `src/ffi/mod.rs` for PyO3 bindings.
-- [ ] Task: Move `#[pyfunction]` and `#[pymodule]` definitions from `src/lib.rs` to the new module.
+- [x] Task: Create `src/python/mod.rs` or `src/ffi/mod.rs` for PyO3 bindings. 5092040
+- [x] Task: Move `#[pyfunction]` and `#[pymodule]` definitions from `src/lib.rs` to the new module. 5092040
 - [ ] Task: Ensure the Rust-Python interface correctly handles `anyhow` errors (converting to `PyResult`).
 - [ ] Task: Conductor - User Manual Verification 'Phase 5: PyO3 Bindings Separation' (Protocol in workflow.md)
 
