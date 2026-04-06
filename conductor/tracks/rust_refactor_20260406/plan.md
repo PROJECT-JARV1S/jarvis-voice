@@ -14,7 +14,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Core & Utils Extraction' (Protocol in workflow.md) eed406b
 
 ## Phase 3: Audio Processing Extraction
-- [ ] Task: Create `src/audio/mod.rs`, `src/audio/input.rs`, and `src/audio/resampler.rs`.
+- [x] Task: Create `src/audio/mod.rs`, `src/audio/input.rs`, and `src/audio/resampler.rs`. bdb3657
 - [ ] Task: Move `cpal` related logic to `src/audio/input.rs`.
 - [ ] Task: Move `rubato` related logic from `src/resampler.rs` to `src/audio/resampler.rs`.
 - [ ] Task: Refactor `src/audio` modules to use `anyhow` for error handling.
