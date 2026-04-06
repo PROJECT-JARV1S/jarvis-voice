@@ -30,7 +30,7 @@
 - [x] Task: Create `src/python/mod.rs` or `src/ffi/mod.rs` for PyO3 bindings. 5092040
 - [x] Task: Move `#[pyfunction]` and `#[pymodule]` definitions from `src/lib.rs` to the new module. 5092040
 - [x] Task: Ensure the Rust-Python interface correctly handles `anyhow` errors (converting to `PyResult`). 9726df9
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: PyO3 Bindings Separation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: PyO3 Bindings Separation' (Protocol in workflow.md) 434a5d8
 
 ## Phase 6: Test Reorganization & Final Cleanup
 - [ ] Task: Create a `tests/` directory (if not already present for Rust integration tests) or a `src/tests/` module.
