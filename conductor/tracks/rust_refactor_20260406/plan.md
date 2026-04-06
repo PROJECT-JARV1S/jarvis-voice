@@ -33,8 +33,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 5: PyO3 Bindings Separation' (Protocol in workflow.md) 434a5d8
 
 ## Phase 6: Test Reorganization & Final Cleanup
-- [ ] Task: Create a `tests/` directory (if not already present for Rust integration tests) or a `src/tests/` module.
-- [ ] Task: Move unit tests from `src/*.rs` files into a dedicated `tests` structure.
-- [ ] Task: Move `src/test_sync.rs` and any other test-only files to the new test structure.
-- [ ] Task: Perform final code cleanup, removing unused imports and ensuring consistent formatting.
+- [x] Task: Create a `tests/` directory (if not already present for Rust integration tests) or a `src/tests/` module. f87c3e2
+- [x] Task: Move unit tests from `src/*.rs` files into a dedicated `tests` structure. f87c3e2
+- [x] Task: Move `src/test_sync.rs` and any other test-only files to the new test structure. f87c3e2
+- [x] Task: Perform final code cleanup, removing unused imports and ensuring consistent formatting. f87c3e2
 - [ ] Task: Conductor - User Manual Verification 'Phase 6: Test Reorganization & Final Cleanup' (Protocol in workflow.md)
