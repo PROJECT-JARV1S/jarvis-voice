@@ -3,8 +3,8 @@ use pyo3::prelude::*;
 pub mod audio;
 mod config;
 pub mod core;
-pub mod model;
 pub mod transcriber;
+pub mod transcription;
 pub mod utils;
 
 #[cfg(test)]
