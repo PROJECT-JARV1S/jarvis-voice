@@ -9,7 +9,6 @@ fn ___version() -> &'static str {
     VERSION
 }
 
-#[pymodule]
 pub fn jarvis_transcriber(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(___version))?;
     m.add_wrapped(wrap_pyfunction!(default))?;
