@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use pyo3::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -7,10 +7,10 @@ use tokio::runtime::Runtime;
 use transcribe_rs::TranscriptionEngine;
 use transcribe_rs::engines::parakeet::ParakeetEngine;
 
-use crate::core::config::Config;
-use crate::audio::resampler::AudioResampler;
-use crate::audio::input::{AudioInput, RawAudio};
 use super::model::load_model;
+use crate::audio::input::{AudioInput, RawAudio};
+use crate::audio::resampler::AudioResampler;
+use crate::core::config::Config;
 
 pub const TARGET_SAMPLE_RATE: usize = 16000;
 
@@ -179,7 +179,6 @@ impl TranscriptionWorker {
         let transcript = self.latest_transcript.lock().unwrap().clone();
         let callback_guard = self.on_complete_callback.lock().unwrap();
         if let Some(callback) = &*callback_guard {
-            let callback = callback;
             Python::attach(|py| {
                 if let Err(e) = callback.call1(py, (transcript,)) {
                     eprintln!("Error invoking Python callback: {:?}", e);
@@ -237,10 +236,10 @@ impl TranscriptionWorker {
         if !self.accumulated_audio.is_empty() {
             if let Ok(result) = self
                 .engine
-                .transcribe_samples(self.accumulated_audio.clone(), None) {
-                if let Ok(mut guard) = self.latest_transcript.lock() {
-                    *guard = result.text;
-                }
+                .transcribe_samples(self.accumulated_audio.clone(), None)
+                && let Ok(mut guard) = self.latest_transcript.lock()
+            {
+                *guard = result.text;
             }
             self.accumulated_audio.clear();
         }

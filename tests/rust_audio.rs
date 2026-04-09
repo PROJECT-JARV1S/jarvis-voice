@@ -1,5 +1,5 @@
-use jarvis_transcriber::audio::resampler::AudioResampler;
 use crossbeam_channel::unbounded;
+use jarvis_transcriber::audio::resampler::AudioResampler;
 
 #[test]
 fn flushes_stream_to_expected_length() {

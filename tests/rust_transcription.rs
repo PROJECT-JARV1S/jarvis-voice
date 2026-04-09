@@ -1,6 +1,6 @@
-use jarvis_transcriber::transcription::engine::TranscriptionWorker;
-use jarvis_transcriber::core::config::Config;
 use crossbeam_channel::unbounded;
+use jarvis_transcriber::core::config::Config;
+use jarvis_transcriber::transcription::engine::TranscriptionWorker;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Condvar, Mutex};
 

@@ -59,7 +59,9 @@ impl AudioInput {
             _ => return Err(anyhow!("Unsupported sample format")),
         }?;
 
-        stream.play().map_err(|e| anyhow!("Failed to play stream: {}", e))?;
+        stream
+            .play()
+            .map_err(|e| anyhow!("Failed to play stream: {}", e))?;
         self.stream = Some(stream);
         Ok(())
     }

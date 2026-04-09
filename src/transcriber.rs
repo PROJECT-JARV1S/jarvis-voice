@@ -12,7 +12,7 @@ use crate::transcription::engine::{Command, worker_thread};
 const DEFAULT_MODEL_URI: &str = "https://blob.handy.computer/parakeet-v3-int8.tar.gz";
 const DEFAULT_MODEL_PATH: &str = "parakeet-tdt-0.6b-v3-int8";
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct Transcriber {
     command_tx: Sender<Command>,
     is_transcribing: Arc<AtomicBool>,
@@ -127,9 +127,9 @@ impl Transcriber {
                         return Err(PyTimeoutError::new_err("Transcription timed out"));
                     }
                     let remaining = duration - elapsed;
-                    let (guard, res) = cvar
-                        .wait_timeout(completed, remaining)
-                        .map_err(|e| PyRuntimeError::new_err(format!("Condvar wait error: {:?}", e)))?;
+                    let (guard, res) = cvar.wait_timeout(completed, remaining).map_err(|e| {
+                        PyRuntimeError::new_err(format!("Condvar wait error: {:?}", e))
+                    })?;
                     completed = guard;
                     if res.timed_out() && !*completed {
                         return Err(PyTimeoutError::new_err("Transcription timed out"));
@@ -137,9 +137,9 @@ impl Transcriber {
                 }
             } else {
                 while !*completed {
-                    completed = cvar
-                        .wait(completed)
-                        .map_err(|e| PyRuntimeError::new_err(format!("Condvar wait error: {:?}", e)))?;
+                    completed = cvar.wait(completed).map_err(|e| {
+                        PyRuntimeError::new_err(format!("Condvar wait error: {:?}", e))
+                    })?;
                 }
             }
             Ok(true)
