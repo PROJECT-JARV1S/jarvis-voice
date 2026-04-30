@@ -4,7 +4,11 @@ import struct
 import pyaudio
 import pvporcupine
 from dotenv import load_dotenv
-import jarvis_transcriber
+
+try:
+    from . import jarvis_transcriber
+except ImportError:
+    import jarvis_voice.jarvis_transcriber as jarvis_transcriber
 
 load_dotenv()
 

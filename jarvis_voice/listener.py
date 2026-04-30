@@ -1,11 +1,12 @@
 import os
 import struct
-import time
 from typing import Union
 
-import pyaudio
 import pvporcupine
-import jarvis_transcriber
+import pyaudio
+
+from . import jarvis_transcriber
+
 
 class Listener:
     def __init__(self, wake_words: Union[str, list[str]], access_key: str = None):
@@ -25,6 +26,9 @@ class Listener:
         self._setup_resources()
 
     def _setup_resources(self):
+        if self.access_key is None:
+            raise ValueError("Error: PORCUPINE_KEY not found in environment.")
+
         self.handle = pvporcupine.create(access_key=self.access_key, keywords=self.wake_words)
         self.pa = pyaudio.PyAudio()
         self.audio_stream = self.pa.open(

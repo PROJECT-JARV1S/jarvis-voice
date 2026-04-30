@@ -7,8 +7,8 @@ def test_listener_uses_wait_until_done():
     # Mock resources to avoid real audio/porcupine init
     with patch('pvporcupine.create') as mock_porcupine, \
          patch('pyaudio.PyAudio') as mock_pyaudio, \
-         patch('jarvis_transcriber.default') as mock_transcriber_default:
-        
+         patch('jarvis_voice.jarvis_transcriber.default') as mock_transcriber_default:
+
         mock_handle = MagicMock()
         mock_handle.sample_rate = 16000
         mock_handle.frame_length = 512

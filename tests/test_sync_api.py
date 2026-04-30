@@ -1,5 +1,5 @@
 import pytest
-import jarvis_transcriber
+import jarvis_voice.jarvis_transcriber as jarvis_transcriber
 import time
 import threading
 
