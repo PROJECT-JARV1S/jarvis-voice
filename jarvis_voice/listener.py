@@ -9,7 +9,29 @@ from . import jarvis_transcriber
 
 
 class Listener:
+    """
+    A high-level interface for voice interaction, combining wake-word detection
+    (via Porcupine) and speech-to-text transcription (via Parakeet/Rust).
+
+    Usage:
+        ```python
+        from jarvis_voice import Listener
+
+        # Will use PORCUPINE_KEY from environment variables
+        listener = Listener(wake_words=["jarvis"])
+        
+        # Starts a blocking loop that listens for the wake word
+        listener.listen()
+        ```
+    """
     def __init__(self, wake_words: Union[str, list[str]], access_key: str = None):
+        """
+        Initializes the Listener with specified wake words and Porcupine access key.
+
+        Args:
+            wake_words: A string or list of strings representing the wake words to listen for (e.g., "jarvis").
+            access_key: Your Porcupine access key. If not provided, it looks for the `PORCUPINE_KEY` environment variable.
+        """
         if access_key:
             self.access_key = access_key
         else:
@@ -46,6 +68,12 @@ class Listener:
             return None
 
     def listen(self):
+        """
+        Starts a blocking loop that continually listens for the wake word.
+        Once detected, it automatically starts the transcription process,
+        waits for the user to finish speaking (detected via silence),
+        and prints the resulting transcript.
+        """
         print("--- JARVIS Voice System Active ---")
         try:
             while True:
@@ -74,6 +102,7 @@ class Listener:
         self._setup_resources()
 
     def stop(self):
+        """Stops the audio stream and releases associated resources."""
         if self.audio_stream:
             self.audio_stream.stop()
             self.audio_stream.close()
@@ -86,7 +115,9 @@ class Listener:
         self.stop()
         
     def get_transcript(self) -> str:
+        """Returns the most recent transcription result as a string."""
         return self.transcriber.get_latest_transcript()
 
     def is_listening(self) -> bool:
+        """Returns True if the underlying transcription engine is currently capturing audio."""
         return self.transcriber.is_transcribing()

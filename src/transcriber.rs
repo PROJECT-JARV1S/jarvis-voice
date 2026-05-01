@@ -12,6 +12,11 @@ use crate::transcription::engine::{Command, worker_thread};
 const DEFAULT_MODEL_URI: &str = "https://blob.handy.computer/parakeet-v3-int8.tar.gz";
 const DEFAULT_MODEL_PATH: &str = "parakeet-tdt-0.6b-v3-int8";
 
+/// The core speech-to-text transcription engine.
+///
+/// This struct manages the Rust worker thread that handles audio capture, silence
+/// detection (VAD), and execution of the Parakeet transcription model. It provides
+/// thread-safe mechanisms to start and stop transcription asynchronously from Python.
 #[pyclass(skip_from_py_object)]
 pub struct Transcriber {
     command_tx: Sender<Command>,
@@ -23,6 +28,9 @@ pub struct Transcriber {
 
 #[pymethods]
 impl Transcriber {
+    /// Initializes a new Transcriber.
+    ///
+    /// Spawns a background worker thread that handles the audio capture and transcription logic.
     #[new]
     #[pyo3(signature = (config=None, model_uri=None, model_path=None))]
     fn py_new(
@@ -78,6 +86,10 @@ impl Transcriber {
         })
     }
 
+    /// Manually starts the transcription process.
+    ///
+    /// Clears the previous transcript and signals the worker thread to begin listening
+    /// to the microphone.
     fn start_transcription(&self) -> PyResult<()> {
         self.is_transcribing.store(true, Ordering::SeqCst);
         if let Ok(mut guard) = self.latest_transcript.lock() {
@@ -89,25 +101,32 @@ impl Transcriber {
         })
     }
 
+    /// Manually stops the transcription process early.
     fn stop_transcription(&self) -> PyResult<()> {
         self.command_tx
             .send(Command::Stop)
             .map_err(|e| PyRuntimeError::new_err(format!("Failed to send stop command: {}", e)))
     }
 
+    /// Checks if the engine is currently transcribing audio.
     fn is_transcribing(&self) -> bool {
         self.is_transcribing.load(Ordering::SeqCst)
     }
 
+    /// Gets the most recent transcription result.
     fn get_latest_transcript(&self) -> String {
         self.latest_transcript.lock().unwrap().clone()
     }
 
+    /// Registers a Python callback function to be invoked when transcription completes.
     fn register_on_complete(&self, callback: Py<PyAny>) {
         let mut guard = self.on_complete_callback.lock().unwrap();
         *guard = Some(callback);
     }
 
+    /// Blocks the calling thread until the current transcription is complete.
+    ///
+    /// Returns `True` if transcription finishes, or raises `TimeoutError` if `timeout` is reached.
     #[pyo3(signature = (timeout=None))]
     fn wait_until_done(&self, py: Python, timeout: Option<f64>) -> PyResult<bool> {
         py.detach(|| {
@@ -153,6 +172,7 @@ impl Drop for Transcriber {
     }
 }
 
+/// Creates a default `Transcriber` instance with default configuration settings.
 #[pyfunction]
 pub fn default() -> PyResult<Transcriber> {
     Transcriber::py_new(None, None, None)

@@ -1,11 +1,18 @@
 use crate::core::config::Config as CoreConfig;
 use pyo3::prelude::*;
 
+/// Configuration for the voice transcriber.
+///
+/// This struct allows you to tweak the Voice Activity Detection (VAD) parameters
+/// for the audio engine, specifically how long silence must be detected before
+/// a transcription is considered complete.
 #[pyclass(from_py_object)]
 #[derive(Clone, Copy)]
 pub struct Config {
+    /// The duration of silence (in seconds) required to stop transcription.
     #[pyo3(get, set)]
     pub silence_duration: f32,
+    /// The root-mean-square (RMS) energy threshold below which audio is considered silence.
     #[pyo3(get, set)]
     pub silence_threshold_rms: f32,
 }
@@ -36,6 +43,9 @@ impl Default for Config {
 
 #[pymethods]
 impl Config {
+    /// Creates a new configuration instance with optional overrides.
+    ///
+    /// If no arguments are provided, it initializes with the default values.
     #[new]
     #[pyo3(signature = (silence_duration=None, silence_threshold_rms=None))]
     fn py_new(silence_duration: Option<f32>, silence_threshold_rms: Option<f32>) -> Self {
@@ -49,6 +59,10 @@ impl Config {
         config.into()
     }
 
+    /// Validates the configuration values.
+    ///
+    /// Checks that `silence_duration` is >= 0 and `silence_threshold_rms` is >= 0.
+    /// Returns a `ValueError` (via `PyResult`) if validation fails.
     fn validate(&self) -> PyResult<()> {
         use crate::utils::AnyhowError;
         let core: CoreConfig = (*self).into();
