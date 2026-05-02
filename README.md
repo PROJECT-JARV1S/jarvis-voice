@@ -106,5 +106,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Maintainer: **JARVIS Team**  
-For support or inquiries, please open an issue on the GitHub repository or reach out via email at `dev@example.com`.
+Maintainer: **skaarfundgandr**  
+For support or inquiries, please open an issue on the GitHub repository.
