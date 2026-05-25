@@ -27,4 +27,6 @@ dev = [
 python-source = "."
 python-packages = ["jarvis_voice"]
 module-name = "jarvis_voice.jarvis_transcriber"
+features = ["python"]
+
 

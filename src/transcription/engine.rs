@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use crossbeam_channel::{Receiver, Sender, unbounded};
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
@@ -14,6 +15,11 @@ use crate::core::config::Config;
 
 pub const TARGET_SAMPLE_RATE: usize = 16000;
 
+#[cfg(feature = "python")]
+pub type Callback = Py<PyAny>;
+#[cfg(not(feature = "python"))]
+pub type Callback = Box<dyn Fn(String) + Send + Sync + 'static>;
+
 pub enum Command {
     Start,
     Stop,
@@ -26,7 +32,7 @@ pub struct TranscriptionWorker {
     is_transcribing: Arc<AtomicBool>,
     latest_transcript: Arc<Mutex<String>>,
     completion_notifier: Arc<(Mutex<bool>, Condvar)>,
-    on_complete_callback: Arc<Mutex<Option<Py<PyAny>>>>,
+    on_complete_callback: Arc<Mutex<Option<Callback>>>,
     config: Config,
 
     audio_input: AudioInput,
@@ -49,7 +55,7 @@ impl TranscriptionWorker {
         is_transcribing: Arc<AtomicBool>,
         latest_transcript: Arc<Mutex<String>>,
         completion_notifier: Arc<(Mutex<bool>, Condvar)>,
-        on_complete_callback: Arc<Mutex<Option<Py<PyAny>>>>,
+        on_complete_callback: Arc<Mutex<Option<Callback>>>,
         config: Config,
         model_uri: String,
         model_path: String,
@@ -179,12 +185,18 @@ impl TranscriptionWorker {
         let transcript = self.latest_transcript.lock().unwrap().clone();
         let callback_guard = self.on_complete_callback.lock().unwrap();
         if let Some(callback) = &*callback_guard {
-            let callback = callback;
-            Python::attach(|py| {
-                if let Err(e) = callback.call1(py, (transcript,)) {
-                    eprintln!("Error invoking Python callback: {:?}", e);
-                }
-            });
+            #[cfg(feature = "python")]
+            {
+                Python::attach(|py| {
+                    if let Err(e) = callback.call1(py, (transcript,)) {
+                        eprintln!("Error invoking Python callback: {:?}", e);
+                    }
+                });
+            }
+            #[cfg(not(feature = "python"))]
+            {
+                (callback)(transcript);
+            }
         }
 
         // Notify waiters
@@ -253,7 +265,7 @@ pub fn worker_thread(
     is_transcribing: Arc<AtomicBool>,
     latest_transcript: Arc<Mutex<String>>,
     completion_notifier: Arc<(Mutex<bool>, Condvar)>,
-    on_complete_callback: Arc<Mutex<Option<Py<PyAny>>>>,
+    on_complete_callback: Arc<Mutex<Option<Callback>>>,
     config: Config,
     model_uri: String,
     model_path: String,

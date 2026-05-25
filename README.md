@@ -55,7 +55,9 @@ Before you begin, ensure you have the following installed:
 
 ## Usage
 
-Using JARVIS Voice is straightforward. The `Listener` class abstracts away the complexity of audio streaming and thread management.
+### Python Usage
+
+Using JARVIS Voice in Python is straightforward. The `Listener` class abstracts away the complexity of audio streaming and thread management.
 
 Here is a simple example to get you started:
 
@@ -80,6 +82,39 @@ except KeyboardInterrupt:
     print("\nShutting down gracefully.")
 finally:
     listener.stop()
+```
+
+### Rust Usage (Pure Rust, No Python dependency)
+
+You can also use the `jarvis-transcriber` crate directly in other Rust projects (e.g. in a Tauri backend or native Rust service) without requiring Python to be installed.
+
+Add it to your `Cargo.toml`:
+```toml
+[dependencies]
+jarvis-transcriber = { path = "path/to/jarvis-voice" }
+```
+
+Initialize and use the `Transcriber` in Rust:
+```rust
+use jarvis_transcriber::transcriber::Transcriber;
+use std::time::Duration;
+
+fn main() -> anyhow::Result<()> {
+    // Initialize transcriber with default config
+    let transcriber = Transcriber::new(None, None, None)?;
+
+    // Start transcribing (async)
+    transcriber.start_transcription()?;
+
+    // Wait until VAD detects silence or timeout is reached
+    let done = transcriber.wait_until_done(Some(Duration::from_secs(10)))?;
+    if done {
+        let text = transcriber.get_latest_transcript();
+        println!("Transcript: {}", text);
+    }
+
+    Ok(())
+}
 ```
 
 ## Roadmap

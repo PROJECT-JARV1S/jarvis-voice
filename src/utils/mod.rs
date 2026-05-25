@@ -1,16 +1,22 @@
 use anyhow::{Result, bail};
+
+#[cfg(feature = "python")]
 use pyo3::exceptions::PyRuntimeError;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 
+#[cfg(feature = "python")]
 pub trait AnyhowError<T> {
     fn to_py(self) -> PyResult<T>;
 }
 
+#[cfg(feature = "python")]
 impl<T> AnyhowError<T> for Result<T> {
     fn to_py(self) -> PyResult<T> {
         self.map_err(|e| PyRuntimeError::new_err(format!("{:?}", e)))
     }
 }
+
 
 pub fn interleaved_i16_to_mono(samples: &[i16], channels: usize) -> Result<Vec<f32>> {
     if channels == 0 {

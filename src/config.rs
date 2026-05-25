@@ -1,4 +1,5 @@
 use crate::core::config::Config as CoreConfig;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 /// Configuration for the voice transcriber.
@@ -6,14 +7,14 @@ use pyo3::prelude::*;
 /// This struct allows you to tweak the Voice Activity Detection (VAD) parameters
 /// for the audio engine, specifically how long silence must be detected before
 /// a transcription is considered complete.
-#[pyclass(from_py_object)]
+#[cfg_attr(feature = "python", pyclass(from_py_object))]
 #[derive(Clone, Copy)]
 pub struct Config {
     /// The duration of silence (in seconds) required to stop transcription.
-    #[pyo3(get, set)]
+    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub silence_duration: f32,
     /// The root-mean-square (RMS) energy threshold below which audio is considered silence.
-    #[pyo3(get, set)]
+    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub silence_threshold_rms: f32,
 }
 
@@ -41,6 +42,17 @@ impl Default for Config {
     }
 }
 
+impl Config {
+    /// Validates the configuration values.
+    ///
+    /// Checks that `silence_duration` is >= 0 and `silence_threshold_rms` is >= 0.
+    pub fn validate(&self) -> anyhow::Result<()> {
+        let core: CoreConfig = (*self).into();
+        core.validate()
+    }
+}
+
+#[cfg(feature = "python")]
 #[pymethods]
 impl Config {
     /// Creates a new configuration instance with optional overrides.
@@ -63,12 +75,13 @@ impl Config {
     ///
     /// Checks that `silence_duration` is >= 0 and `silence_threshold_rms` is >= 0.
     /// Returns a `ValueError` (via `PyResult`) if validation fails.
-    fn validate(&self) -> PyResult<()> {
+    #[pyo3(name = "validate")]
+    fn py_validate(&self) -> PyResult<()> {
         use crate::utils::AnyhowError;
-        let core: CoreConfig = (*self).into();
-        core.validate().to_py()
+        self.validate().to_py()
     }
 }
+
 
 #[cfg(test)]
 mod tests {
