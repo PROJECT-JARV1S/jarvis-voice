@@ -8,6 +8,11 @@ use rubato::{
 
 use crate::utils::{interleaved_f32_to_mono, interleaved_i16_to_mono};
 
+/// Resamples multi-channel interleaved audio to 16 kHz mono `f32` using the
+/// [rubato](https://docs.rs/rubato) asynchronous resampler.
+///
+/// Processed frames are sent over an internal channel to be consumed by the
+/// transcription engine.
 pub struct AudioResampler {
     input_channels: usize,
     chunk_size: usize,
@@ -22,6 +27,18 @@ pub struct AudioResampler {
 }
 
 impl AudioResampler {
+    /// Creates a new resampler.
+    ///
+    /// # Arguments
+    /// * `input_sample_rate` - Sample rate of the incoming audio (Hz).
+    /// * `input_channels` - Number of interleaved channels.
+    /// * `chunk_size` - Number of frames per processing chunk.
+    /// * `target_sample_rate` - Desired output sample rate (Hz).
+    /// * `channel_tx` - Sender for the resampled mono `f32` output.
+    ///
+    /// # Errors
+    /// Returns an error if any argument is zero or if the rubato resampler
+    /// cannot be constructed.
     pub fn new(
         input_sample_rate: usize,
         input_channels: usize,
@@ -53,9 +70,10 @@ impl AudioResampler {
         };
 
         let resample_ratio = target_sample_rate as f64 / input_sample_rate as f64;
+        let max_resample_ratio_relative = resample_ratio.max(1.0) * 2.0;
         let resampler = Async::<f32>::new_sinc(
             resample_ratio,
-            1.0,
+            max_resample_ratio_relative,
             &params,
             chunk_size,
             1,
@@ -80,16 +98,40 @@ impl AudioResampler {
         })
     }
 
+    /// Feeds interleaved `i16` samples into the resampler.
+    ///
+    /// Samples are down-mixed to mono, converted to `f32`, and resampled.
+    /// Output chunks are sent through the internal channel when a full chunk
+    /// is ready.
+    ///
+    /// # Errors
+    /// Returns an error if channel count validation fails.
     pub fn process_i16(&mut self, samples: &[i16]) -> Result<()> {
         let mono = interleaved_i16_to_mono(samples, self.input_channels)?;
         self.push_mono_frames(&mono)
     }
 
+    /// Feeds interleaved `f32` samples into the resampler.
+    ///
+    /// Samples are down-mixed to mono and resampled. Output chunks are sent
+    /// through the internal channel when a full chunk is ready.
+    ///
+    /// # Errors
+    /// Returns an error if channel count validation fails.
     pub fn process_f32(&mut self, samples: &[f32]) -> Result<()> {
         let mono = interleaved_f32_to_mono(samples, self.input_channels)?;
         self.push_mono_frames(&mono)
     }
 
+    /// Flushes any remaining buffered audio through the resampler.
+    ///
+    /// Call this after the last [`process_i16`](AudioResampler::process_i16) or
+    /// [`process_f32`](AudioResampler::process_f32) to drain all pending
+    /// samples (including resampler delay). The flushed output is sent over
+    /// the internal channel.
+    ///
+    /// # Errors
+    /// Returns an error if the resampler stalls or the channel cannot send.
     pub fn flush(&mut self) -> Result<()> {
         let expected_total_output =
             (self.total_input_frames as f64 * self.resampler.resample_ratio()).ceil() as usize;
@@ -132,6 +174,9 @@ impl AudioResampler {
         Ok(())
     }
 
+    /// Resets the resampler state, clearing internal buffers and counters.
+    ///
+    /// Useful when reusing the same resampler for a new transcription session.
     pub fn reset_stream(&mut self) {
         self.resampler.reset();
         self.pending_input.clear();

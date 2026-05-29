@@ -9,6 +9,17 @@ use tar::Archive;
 use transcribe_rs::onnx::parakeet::ParakeetModel;
 use transcribe_rs::onnx::Quantization;
 
+/// Downloads (if necessary) and loads the Parakeet ONNX model.
+///
+/// If the model directory does not exist or fails to load, the archive is
+/// downloaded from `uri`, extracted to `path`, and then loaded.
+///
+/// # Arguments
+/// * `uri` - URL of the `.tar.gz` model archive.
+/// * `path` - Local directory path where the extracted model lives.
+///
+/// # Errors
+/// Returns an error if downloading, extracting, or loading the model fails.
 pub async fn load_model(uri: &str, path: &str) -> Result<ParakeetModel> {
     ensure_model_exists(uri, path).await?;
 

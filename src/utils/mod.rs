@@ -5,8 +5,11 @@ use pyo3::exceptions::PyRuntimeError;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
+/// Extension trait for converting `anyhow::Result` into `PyResult`.
 #[cfg(feature = "python")]
 pub trait AnyhowError<T> {
+    /// Converts `anyhow::Result<T>` to `PyResult<T>`, mapping errors to
+    /// `PyRuntimeError`.
     fn to_py(self) -> PyResult<T>;
 }
 
@@ -17,7 +20,21 @@ impl<T> AnyhowError<T> for Result<T> {
     }
 }
 
-
+/// Downmixes interleaved `i16` multi-channel audio to mono `f32`.
+///
+/// Each channel's sample is normalised to \[-1.0, 1.0\] and then averaged
+/// across channels per frame.
+///
+/// # Arguments
+/// * `samples` - Interleaved multi-channel `i16` samples.
+/// * `channels` - Number of channels.
+///
+/// # Returns
+/// A vector of mono `f32` frames, one per original sample frame.
+///
+/// # Errors
+/// Returns an error if `channels` is zero or if `samples.len()` is not a
+/// multiple of `channels`.
 pub fn interleaved_i16_to_mono(samples: &[i16], channels: usize) -> Result<Vec<f32>> {
     if channels == 0 {
         bail!("channels must be greater than zero");
@@ -46,6 +63,20 @@ pub fn interleaved_i16_to_mono(samples: &[i16], channels: usize) -> Result<Vec<f
     Ok(mono)
 }
 
+/// Downmixes interleaved `f32` multi-channel audio to mono `f32`.
+///
+/// Each channel's sample is averaged across channels per frame.
+///
+/// # Arguments
+/// * `samples` - Interleaved multi-channel `f32` samples.
+/// * `channels` - Number of channels.
+///
+/// # Returns
+/// A vector of mono `f32` frames, one per original sample frame.
+///
+/// # Errors
+/// Returns an error if `channels` is zero or if `samples.len()` is not a
+/// multiple of `channels`.
 pub fn interleaved_f32_to_mono(samples: &[f32], channels: usize) -> Result<Vec<f32>> {
     if channels == 0 {
         bail!("channels must be greater than zero");
@@ -71,6 +102,9 @@ pub fn interleaved_f32_to_mono(samples: &[f32], channels: usize) -> Result<Vec<f
     Ok(mono)
 }
 
+/// Normalises an `i16` sample to the range \[-1.0, 1.0\].
+///
+/// `i16::MIN` (-32768) maps to -1.0; `i16::MAX` (32767) maps to ~1.0.
 pub fn normalize_i16(sample: i16) -> f32 {
     if sample == i16::MIN {
         -1.0

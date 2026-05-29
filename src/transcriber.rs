@@ -31,7 +31,17 @@ pub struct Transcriber {
 impl Transcriber {
     /// Initializes a new Transcriber.
     ///
-    /// Spawns a background worker thread that handles the audio capture and transcription logic.
+    /// Spawns a background worker thread that handles the audio capture and
+    /// transcription logic. The worker downloads the Parakeet model on first
+    /// use if the model directory is missing.
+    ///
+    /// # Arguments
+    /// * `config` - Optional VAD configuration. Uses defaults when `None`.
+    /// * `model_uri` - Optional download URL for the model archive.
+    /// * `model_path` - Optional local path for the extracted model directory.
+    ///
+    /// # Errors
+    /// Returns an error if the worker thread channel cannot be created.
     pub fn new(
         config: Option<Config>,
         model_uri: Option<String>,
@@ -82,8 +92,11 @@ impl Transcriber {
 
     /// Manually starts the transcription process.
     ///
-    /// Clears the previous transcript and signals the worker thread to begin listening
-    /// to the microphone.
+    /// Clears the previous transcript and signals the worker thread to begin
+    /// capturing and transcribing audio.
+    ///
+    /// # Errors
+    /// Returns an error if the command cannot be sent to the worker thread.
     pub fn start_transcription(&self) -> anyhow::Result<()> {
         self.is_transcribing.store(true, Ordering::SeqCst);
         if let Ok(mut guard) = self.latest_transcript.lock() {
@@ -96,6 +109,9 @@ impl Transcriber {
     }
 
     /// Manually stops the transcription process early.
+    ///
+    /// # Errors
+    /// Returns an error if the command cannot be sent to the worker thread.
     pub fn stop_transcription(&self) -> anyhow::Result<()> {
         self.command_tx
             .send(Command::Stop)
@@ -108,11 +124,17 @@ impl Transcriber {
     }
 
     /// Gets the most recent transcription result.
+    ///
+    /// Returns an empty string if no transcription has completed yet.
     pub fn get_latest_transcript(&self) -> String {
         self.latest_transcript.lock().unwrap().clone()
     }
 
     /// Registers a callback function to be invoked when transcription completes.
+    ///
+    /// # Arguments
+    /// * `callback` - A closure (Rust) or Python callable to invoke with the
+    ///   final transcript string.
     pub fn register_on_complete(&self, callback: Callback) {
         let mut guard = self.on_complete_callback.lock().unwrap();
         *guard = Some(callback);
@@ -120,7 +142,14 @@ impl Transcriber {
 
     /// Blocks the calling thread until the current transcription is complete.
     ///
-    /// Returns `true` if transcription finishes, or `false` if `timeout` is reached.
+    /// # Arguments
+    /// * `timeout` - Maximum duration to wait. `None` waits indefinitely.
+    ///
+    /// # Returns
+    /// `true` if transcription finished, `false` if the timeout elapsed first.
+    ///
+    /// # Errors
+    /// Returns an error if the condition variable wait mechanism fails.
     pub fn wait_until_done(&self, timeout: Option<Duration>) -> anyhow::Result<bool> {
         let (lock, cvar) = &*self.completion_notifier;
         let mut completed = lock.lock().unwrap();
@@ -157,6 +186,7 @@ impl Transcriber {
 }
 
 impl Drop for Transcriber {
+    /// Sends a [`Shutdown`](Command::Shutdown) command to the worker thread.
     fn drop(&mut self) {
         let _ = self.command_tx.send(Command::Shutdown);
     }

@@ -7,14 +7,29 @@ use pyo3::prelude::*;
 /// This struct allows you to tweak the Voice Activity Detection (VAD) parameters
 /// for the audio engine, specifically how long silence must be detected before
 /// a transcription is considered complete.
-#[cfg_attr(feature = "python", pyclass(from_py_object))]
+#[cfg(feature = "python")]
+#[pyclass(from_py_object)]
 #[derive(Clone, Copy)]
 pub struct Config {
     /// The duration of silence (in seconds) required to stop transcription.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
+    #[pyo3(get, set)]
     pub silence_duration: f32,
     /// The root-mean-square (RMS) energy threshold below which audio is considered silence.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
+    #[pyo3(get, set)]
+    pub silence_threshold_rms: f32,
+}
+
+/// Configuration for the voice transcriber.
+///
+/// This struct allows you to tweak the Voice Activity Detection (VAD) parameters
+/// for the audio engine, specifically how long silence must be detected before
+/// a transcription is considered complete.
+#[cfg(not(feature = "python"))]
+#[derive(Clone, Copy)]
+pub struct Config {
+    /// The duration of silence (in seconds) required to stop transcription.
+    pub silence_duration: f32,
+    /// The root-mean-square (RMS) energy threshold below which audio is considered silence.
     pub silence_threshold_rms: f32,
 }
 
@@ -46,6 +61,9 @@ impl Config {
     /// Validates the configuration values.
     ///
     /// Checks that `silence_duration` is >= 0 and `silence_threshold_rms` is >= 0.
+    ///
+    /// # Errors
+    /// Returns an error if either value is negative.
     pub fn validate(&self) -> anyhow::Result<()> {
         let core: CoreConfig = (*self).into();
         core.validate()

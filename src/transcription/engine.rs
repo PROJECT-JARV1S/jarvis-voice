@@ -12,19 +12,33 @@ use crate::audio::input::{AudioInput, RawAudio};
 use crate::audio::resampler::AudioResampler;
 use crate::core::config::Config;
 
+/// Target sample rate (Hz) that all captured audio is resampled to for the
+/// Parakeet model.
 pub const TARGET_SAMPLE_RATE: usize = 16000;
 
+/// Callback invoked with the final transcript when transcription completes.
 #[cfg(feature = "python")]
 pub type Callback = Py<PyAny>;
+/// Callback invoked with the final transcript when transcription completes.
 #[cfg(not(feature = "python"))]
 pub type Callback = Box<dyn Fn(String) + Send + Sync + 'static>;
 
+/// Commands sent from the [`Transcriber`](crate::transcriber::Transcriber) to
+/// the background worker thread.
 pub enum Command {
+    /// Start capturing and transcribing audio.
     Start,
+    /// Stop the current transcription session.
     Stop,
+    /// Terminate the worker thread.
     Shutdown,
 }
 
+/// Internal worker that manages audio capture, VAD, and the Parakeet model.
+///
+/// Runs in a dedicated thread spawned by [`Transcriber`](crate::transcriber::Transcriber).
+/// Listens for [`Command`] messages on one channel while receiving raw audio
+/// chunks and resampled frames on separate channels.
 pub struct TranscriptionWorker {
     engine: ParakeetModel,
     command_rx: Receiver<Command>,
@@ -49,6 +63,23 @@ pub struct TranscriptionWorker {
 }
 
 impl TranscriptionWorker {
+    /// Creates a new worker, loading the Parakeet model and initialising audio
+    /// input.
+    ///
+    /// # Arguments
+    /// * `command_rx` - Receiver for [`Command`] messages.
+    /// * `is_transcribing` - Shared atomic flag exposed to the public API.
+    /// * `latest_transcript` - Shared location for the most recent transcript.
+    /// * `completion_notifier` - Condvar pair used by
+    ///   [`wait_until_done`](crate::transcriber::Transcriber::wait_until_done).
+    /// * `on_complete_callback` - Optional callback invoked on completion.
+    /// * `config` - VAD parameters.
+    /// * `model_uri` - Download URI for the Parakeet model archive.
+    /// * `model_path` - Local path to the extracted model directory.
+    ///
+    /// # Errors
+    /// Returns an error if the Tokio runtime, model download, model loading,
+    /// or audio input initialisation fails.
     pub fn new(
         command_rx: Receiver<Command>,
         is_transcribing: Arc<AtomicBool>,
@@ -94,6 +125,11 @@ impl TranscriptionWorker {
         })
     }
 
+    /// Main event loop.
+    ///
+    /// Blocks on channels until a [`Shutdown`](Command::Shutdown) command is
+    /// received. While inactive it waits for [`Start`](Command::Start); while
+    /// active it dispatches raw audio, resampled audio, and commands.
     pub fn run(&mut self) {
         loop {
             if self.is_active {
@@ -259,6 +295,10 @@ impl TranscriptionWorker {
     }
 }
 
+/// Entry point for the background worker thread.
+///
+/// Constructs a [`TranscriptionWorker`] and runs its event loop. Errors during
+/// initialisation are logged to stderr.
 pub fn worker_thread(
     command_rx: Receiver<Command>,
     is_transcribing: Arc<AtomicBool>,

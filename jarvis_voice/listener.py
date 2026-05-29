@@ -52,6 +52,9 @@ class Listener:
         """
         Initializes the Listener with specified wake words and Porcupine access key.
 
+        Creates the Porcupine engine, opens the microphone stream, and
+        instantiates the Rust transcription backend.
+
         Args:
             wake_words: A string or list of strings representing the wake words
                 to listen for (e.g., ``"jarvis"``).
@@ -62,6 +65,10 @@ class Listener:
                 are printed to stdout.
             on_wake_word: Optional callback invoked with the detected wake word
                 string each time a wake word is recognised.
+
+        Raises:
+            ValueError: If ``PORCUPINE_KEY`` is not set and no ``access_key``
+                is supplied.
         """
         if access_key:
             self.access_key = access_key
@@ -87,6 +94,8 @@ class Listener:
         self._setup_resources()
 
     def _setup_resources(self):
+        """(Re)creates the Porcupine engine and audio input stream."""
+
         if self.access_key is None:
             raise ValueError("Error: PORCUPINE_KEY not found in environment.")
 
@@ -100,6 +109,12 @@ class Listener:
         self.audio_stream.start()
 
     def _get_next_audio_frame(self):
+        """Reads one frame of audio from the microphone.
+
+        Returns:
+            A tuple of ``frame_length`` signed-16-bit samples, or ``None`` on
+            read error.
+        """
         try:
             pcm, overflowed = self.audio_stream.read(self.handle.frame_length)
             return struct.unpack_from("h" * self.handle.frame_length, pcm)
@@ -169,11 +184,14 @@ class Listener:
         return self._listen_thread
 
     def force_start_transcribe(self):
-        """Manually triggers the transcription process."""
+        """Manually triggers the Rust transcription backend to begin capturing audio.
+
+        Silences any prior transcript and starts VAD-based recording.
+        """
         self.transcriber.start_transcription()
 
     def restart(self):
-        """Stops and re-initialises the listener resources."""
+        """Stops the listener and re-initialises all resources (Porcupine, audio stream)."""
         self.stop()
         self._setup_resources()
 
@@ -181,7 +199,8 @@ class Listener:
         """
         Signals the listen loop to exit gracefully and releases resources.
 
-        Safe to call from any thread.
+        If running in an async thread, blocks up to 5 seconds for it to
+        finish. Safe to call from any thread.
         """
         self._is_running = False
 
@@ -203,17 +222,27 @@ class Listener:
             self.handle = None
 
     def __del__(self):
+        """Ensures resources are released on garbage collection."""
         self.stop()
 
     def get_transcript(self) -> str:
-        """Returns the most recent transcription result as a string."""
+        """Returns the most recent transcription result.
+
+        Returns:
+            The transcribed text as a string. Empty string if no transcription
+            has completed yet.
+        """
         return self.transcriber.get_latest_transcript()
 
     @property
     def is_running(self) -> bool:
-        """Returns ``True`` if the listen loop is currently active."""
+        """Whether the wake-word listen loop is currently active."""
         return self._is_running
 
     def is_listening(self) -> bool:
-        """Returns ``True`` if the underlying transcription engine is currently capturing audio."""
+        """Whether the Rust transcription engine is currently capturing audio.
+
+        Returns:
+            ``True`` if the microphone is being recorded for transcription.
+        """
         return self.transcriber.is_transcribing()
