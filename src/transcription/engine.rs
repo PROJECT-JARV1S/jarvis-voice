@@ -5,8 +5,7 @@ use pyo3::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use tokio::runtime::Runtime;
-use transcribe_rs::TranscriptionEngine;
-use transcribe_rs::engines::parakeet::ParakeetEngine;
+use transcribe_rs::onnx::parakeet::{ParakeetModel, ParakeetParams};
 
 use super::model::load_model;
 use crate::audio::input::{AudioInput, RawAudio};
@@ -27,7 +26,7 @@ pub enum Command {
 }
 
 pub struct TranscriptionWorker {
-    engine: ParakeetEngine,
+    engine: ParakeetModel,
     command_rx: Receiver<Command>,
     is_transcribing: Arc<AtomicBool>,
     latest_transcript: Arc<Mutex<String>>,
@@ -249,7 +248,7 @@ impl TranscriptionWorker {
         if !self.accumulated_audio.is_empty() {
             if let Ok(result) = self
                 .engine
-                .transcribe_samples(self.accumulated_audio.clone(), None)
+                .transcribe_with(&self.accumulated_audio, &ParakeetParams::default())
             {
                 if let Ok(mut guard) = self.latest_transcript.lock() {
                     *guard = result.text;

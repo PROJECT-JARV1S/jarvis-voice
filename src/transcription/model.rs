@@ -6,16 +6,13 @@ use std::fs::{File, remove_dir_all, remove_file};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use tar::Archive;
-use transcribe_rs::TranscriptionEngine;
-use transcribe_rs::engines::parakeet::{ParakeetEngine, ParakeetModelParams};
+use transcribe_rs::onnx::parakeet::ParakeetModel;
+use transcribe_rs::onnx::Quantization;
 
-pub async fn load_model(uri: &str, path: &str) -> Result<ParakeetEngine> {
+pub async fn load_model(uri: &str, path: &str) -> Result<ParakeetModel> {
     ensure_model_exists(uri, path).await?;
 
-    let mut engine = ParakeetEngine::new();
-
-    engine
-        .load_model_with_params(path.as_ref(), ParakeetModelParams::int8())
+    let engine = ParakeetModel::load(path.as_ref(), &Quantization::Int8)
         .map_err(|e| anyhow!(e.to_string()))
         .context("Failed to load model")?;
 
@@ -60,11 +57,7 @@ async fn extract_archive(source: &PathBuf) -> Result<()> {
 }
 
 async fn try_load_model(path: PathBuf) -> bool {
-    let mut engine = ParakeetEngine::new();
-
-    let res = engine.load_model_with_params(&path, ParakeetModelParams::int8());
-
-    res.is_ok()
+    ParakeetModel::load(&path, &Quantization::Int8).is_ok()
 }
 
 async fn download_model(uri: &str, path: &PathBuf) -> Result<()> {
