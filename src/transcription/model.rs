@@ -80,18 +80,34 @@ async fn download_model(uri: &str, path: &PathBuf) -> Result<()> {
         bail!("failed to download model: {}", res.status());
     }
 
-    println!("Model downloaded, extracting...");
+    let mut tmp_path = path.clone();
+    let mut filename = tmp_path
+        .file_name()
+        .ok_or_else(|| anyhow!("Invalid path filename"))?
+        .to_os_string();
+    filename.push(".tmp");
+    tmp_path.set_file_name(filename);
 
-    let mut file = File::create(path).context("failed to create file")?;
+    let mut file = File::create(&tmp_path).context("failed to create temporary file")?;
 
     let mut stream = res.bytes_stream();
 
     while let Some(item) = stream.next().await {
-        let chunk = item.map_err(|e| anyhow!("Error while downloading chunk: {}", e))?;
-        file.write_all(&chunk).context("Failed to write chunk")?;
+        if let Err(e) = item {
+            let _ = remove_file(&tmp_path);
+            bail!("Error while downloading chunk: {}", e);
+        }
+        let chunk = item.unwrap();
+        if let Err(e) = file.write_all(&chunk) {
+            let _ = remove_file(&tmp_path);
+            return Err(e).context("Failed to write chunk to temporary file");
+        }
     }
 
-    println!("Model extracted");
+    std::fs::rename(&tmp_path, path)
+        .context("Failed to rename temporary file to destination path")?;
+
+    println!("Model download complete");
 
     Ok(())
 }
